@@ -1,0 +1,38 @@
+# Testing Framework
+pytest==7.0.0
+pytest-html==3.1.1
+pytest-order==1.1.0
+pytest-xdist==3.3.1
+
+# Test Reporting
+allure-pytest==2.9.45
+allure-python-commons==2.9.45
+
+# HTTP Requests
+requests==2.31.0
+
+# Database
+SQLAlchemy==2.0.20
+psycopg2-binary==2.9.9
+mysql-connector-python==8.1.0
+
+# Data Processing
+pandas==1.5.0
+numpy==1.23.3
+
+# Configuration
+python-dotenv==0.19.2
+
+# Utilities
+PyJWT==2.3.0
+cryptography==41.0.3
+deepdiff==6.4.1
+Faker==15.0.0
+
+# Code Quality
+flake8==5.0.4
+autopep8==1.6.0
+isort==5.6.4
+
+# AWS (Optional, for CI/CD)
+boto3==1.29.0
