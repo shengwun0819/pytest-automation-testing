@@ -1,0 +1,5 @@
+case_id,case_description,is_run,tags,status_code,query_string,cookie
+TC001,Get all users successfully,1,regression,200,?page=1&limit=10,auth
+TC002,Get users with invalid page number,1,regression,400,?page=-1,auth
+TC003,Get users without authentication,1,regression,401,,no-auth
+TC004,Get users with invalid limit,1,regression,400,?page=1&limit=0,auth

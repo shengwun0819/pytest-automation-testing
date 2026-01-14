@@ -2,22 +2,18 @@
 pytest 配置和 fixtures
 定義測試的共用設定和前置/後置處理
 """
-import glob
 import os
 import shutil
 import subprocess
 import time
 from datetime import datetime
 
-import common.constants as constants
 import config
 import pytest
-from database.db_sqlalchemy import DBSqlalchemy
 
 # 全域變數
 env = config.ENV
 version = config.VERSION
-db_sqlalchemy = DBSqlalchemy()
 
 
 def pytest_addoption(parser):
@@ -35,12 +31,6 @@ def pytest_addoption(parser):
         help='是否匯出報告（true/false）'
     )
     parser.addoption(
-        '--db_type',
-        action='store',
-        default='postgres',
-        help='資料庫類型：postgres 或 mysql'
-    )
-    parser.addoption(
         "--allure-results-dir",
         action="store",
         default="allure-results",
@@ -54,8 +44,6 @@ def pytest_configure(config):
     """
     global target_tags
     target_tags = config.getoption('--tags')
-    db_type = config.getoption('--db_type')
-    config.db_type = db_type
     
     if target_tags:
         target_tags = target_tags.lower().split(',')
@@ -66,68 +54,11 @@ def pre_test(request):
     """
     測試前的準備工作（session scope）
     """
-    db_type = request.config.getoption('--db_type')
-    
     # 清理之前的 Allure 結果
     subprocess.run('rm -rf ./allure-results/*', shell=True)
     
     # 可以在這裡加入其他前置準備工作
     # 例如：初始化測試資料、設定環境等
-
-
-@pytest.fixture(scope='session')
-def db_type(request):
-    """
-    取得資料庫類型
-    """
-    return request.config.db_type
-
-
-@pytest.fixture(scope="class", autouse=True)
-def class_process(request):
-    """
-    每個測試類別的前後處理（class scope）
-    """
-    import importlib
-    importlib.reload(config)
-    db_type = request.config.getoption('--db_type')
-    
-    # 測試前：清理並初始化資料庫
-    db_sqlalchemy.pre_cross_db_query(
-        db_type,
-        sql_script=constants.DELETE_SQL_SCRIPT,
-        service='service_a'
-    )
-    db_sqlalchemy.pre_cross_db_query(
-        db_type,
-        sql_script=constants.DELETE_SQL_SCRIPT,
-        service='service_b'
-    )
-    
-    db_sqlalchemy.pre_cross_db_query(
-        db_type,
-        sql_script=constants.INIT_SQL_SCRIPT,
-        service='service_a'
-    )
-    db_sqlalchemy.pre_cross_db_query(
-        db_type,
-        sql_script=constants.INIT_SQL_SCRIPT,
-        service='service_b'
-    )
-    
-    yield
-    
-    # 測試後：清理資料庫
-    db_sqlalchemy.pre_cross_db_query(
-        db_type,
-        sql_script=constants.DELETE_SQL_SCRIPT,
-        service='service_a'
-    )
-    db_sqlalchemy.pre_cross_db_query(
-        db_type,
-        sql_script=constants.DELETE_SQL_SCRIPT,
-        service='service_b'
-    )
 
 
 @pytest.fixture(scope='function')
@@ -170,10 +101,8 @@ def pytest_sessionfinish(session):
     """
     測試會話結束時的處理
     """
-    db_type = session.config.getoption('--db_type')
-    
     # 可以在這裡加入清理工作
-    # 例如：恢復資料庫狀態、清理測試資料等
+    # 例如：清理測試資料、重置環境等
 
 
 def pytest_terminal_summary(terminalreporter, config, exitstatus):
@@ -184,14 +113,13 @@ def pytest_terminal_summary(terminalreporter, config, exitstatus):
     time.sleep(2)
     
     is_export = config.getoption('--export')
-    db_type = config.getoption('--db_type')
     allure_results_dir = config.getoption("--allure-results-dir")
     
     time_now = datetime.strftime(datetime.now(), '%Y-%m-%d_%H:%M:%S')
     result = 'success' if exitstatus == 0 else 'failed'
     commit_sha = config.COMMIT_SHA or 'local'
-    report_dir = f"test_report/report_{commit_sha}_{db_type}_{result}_{time_now}"
-    report_name = f'report_{commit_sha}_{db_type}_{result}_{time_now}.html'
+    report_dir = f"test_report/report_{commit_sha}_{result}_{time_now}"
+    report_name = f'report_{commit_sha}_{result}_{time_now}.html'
     
     failed = len(terminalreporter.stats.get('failed', []))
     passed = len(terminalreporter.stats.get('passed', []))

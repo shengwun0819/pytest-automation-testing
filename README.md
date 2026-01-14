@@ -5,7 +5,6 @@
 ## 📋 專案特色
 
 - ✅ **多環境支援**：支援多個測試環境配置
-- ✅ **多資料庫支援**：支援 PostgreSQL 和 MySQL
 - ✅ **資料驅動測試**：使用 CSV 檔案進行參數化測試
 - ✅ **完整的驗證系統**：自動驗證 API 回應結構和內容
 - ✅ **測試報告**：使用 Allure 生成美觀的測試報告
@@ -25,8 +24,6 @@
 │   └── file_process.py    # 檔案處理工具
 ├── config.py              # 配置管理
 ├── conftest.py            # pytest 配置和 fixtures
-├── database/              # 資料庫操作
-│   └── db_sqlalchemy.py   # SQLAlchemy 封裝
 ├── tests/                 # 測試案例
 │   ├── users/            # 使用者相關測試
 │   ├── customers/        # 客戶相關測試
@@ -35,6 +32,7 @@
 │   └── dev/              # 開發環境測試資料
 │       ├── *.csv         # 測試案例資料
 │       └── expected_result/  # 預期結果
+├── test_report/          # 測試報告（執行測試時自動生成）
 ├── utils/                # 工具類別
 │   ├── assert_response.py    # 回應斷言
 │   ├── auth.py               # 認證工具
@@ -44,6 +42,8 @@
 ```
 
 ## 🚀 快速開始
+
+> 💡 **詳細使用指南**：請參考 [USAGE.md](USAGE.md) 獲取完整的使用說明和範例。
 
 ### 1. 安裝依賴
 
@@ -70,21 +70,11 @@ VERSION=/v1
 SERVICE_A_BASE_URL=https://api.example.com
 SERVICE_A_ACCOUNT=test_user
 SERVICE_A_PASSWORD=test_password
-SERVICE_A_DB_HOST=localhost
-SERVICE_A_DB_PORT=5432
-SERVICE_A_DB_NAME=test_db
-SERVICE_A_DB_USER=test_user
-SERVICE_A_DB_PASSWORD=test_password
 
 # Service B 配置（對應原始專案中的 BEN）
 SERVICE_B_BASE_URL=https://api.example.com
 SERVICE_B_ACCOUNT=test_user
 SERVICE_B_PASSWORD=test_password
-SERVICE_B_DB_HOST=localhost
-SERVICE_B_DB_PORT=5432
-SERVICE_B_DB_NAME=test_db
-SERVICE_B_DB_USER=test_user
-SERVICE_B_DB_PASSWORD=test_password
 
 # 測試資料路徑
 TEST_DATA_FOLDER=./test_data
@@ -104,9 +94,6 @@ pytest tests/ --alluredir=allure-results
 
 # 執行特定標籤的測試
 pytest tests/ --tag=regression --alluredir=allure-results
-
-# 指定資料庫類型
-pytest tests/ --db_type=postgres --alluredir=allure-results
 
 # 生成 Allure 報告
 allure serve allure-results
@@ -141,7 +128,7 @@ class TestGetUsers:
 
     @allure.story("Positive Test Cases")
     @pytest.mark.parametrize('case_input', FileProcess.read_csv_data('get_users', 'users'))
-    def test_get_users(self, db_type, is_run, case_input):
+    def test_get_users(self, is_run, case_input):
         allure.dynamic.title(f"{case_input['case_id']} - {case_input['case_description']}")
         
         if not is_run(run=case_input['is_run'], tags=case_input['tags']):
@@ -170,9 +157,9 @@ class TestGetUsers:
 
 統一管理環境變數和配置，支援多環境切換。
 
-### 3. Database
+### 3. FileProcess
 
-使用 SQLAlchemy 封裝資料庫操作，支援 PostgreSQL 和 MySQL。
+提供讀取 CSV、JSON 等測試資料檔案的方法。
 
 ### 4. Validator
 
@@ -193,6 +180,8 @@ allure generate allure-results --clean -o allure-report
 # 開啟報告
 allure open allure-report
 ```
+
+> **注意**：執行測試時，框架會自動在 `test_report/` 目錄下生成 HTML 報告檔案。此目錄會在首次執行測試時自動建立，無需手動建立。
 
 ## 🛠️ 自訂擴展
 
@@ -220,7 +209,7 @@ allure open allure-report
 2. **預期結果驗證**：使用 JSON 檔案儲存預期結果，確保一致性
 3. **標籤管理**：使用標籤分類測試案例，方便選擇性執行
 4. **錯誤處理**：完善的錯誤處理和日誌記錄
-5. **資料庫清理**：測試前後自動清理測試資料
+5. **環境隔離**：使用不同的環境配置進行測試，避免影響生產環境
 
 ## 🤝 貢獻
 

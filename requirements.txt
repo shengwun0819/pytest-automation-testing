@@ -11,11 +11,6 @@ allure-python-commons==2.9.45
 # HTTP Requests
 requests==2.31.0
 
-# Database
-SQLAlchemy==2.0.20
-psycopg2-binary==2.9.9
-mysql-connector-python==8.1.0
-
 # Data Processing
 pandas==1.5.0
 numpy==1.23.3

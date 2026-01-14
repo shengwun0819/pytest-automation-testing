@@ -12,7 +12,7 @@
                      │
 ┌────────────────────▼────────────────────────────────────┐
 │                  Test Data Layer                         │
-│  (CSV files + Expected JSON + SQL scripts)              │
+│  (CSV files + Expected JSON)                            │
 └────────────────────┬────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────┐
@@ -22,7 +22,7 @@
                      │
 ┌────────────────────▼────────────────────────────────────┐
 │                  Infrastructure Layer                     │
-│  (Base API + Database + Config + Utils)                 │
+│  (Base API + Config + Utils)                            │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -52,19 +52,7 @@
 - 透過 `service` 參數支援多服務（service_a/service_b）
 - 預設 timeout 為 20 秒
 
-### 3. 資料庫操作 (database/db_sqlalchemy.py)
-
-**職責：**
-- 封裝資料庫操作
-- 支援 PostgreSQL 和 MySQL
-- 執行 SQL 腳本
-
-**設計決策：**
-- 使用 SQLAlchemy 作為 ORM
-- 支援跨資料庫的 SQL 執行
-- 自動處理 SQL 語句分割和註解移除
-
-### 4. 驗證器 (Validator/validate_common.py)
+### 3. 驗證器 (Validator/validate_common.py)
 
 **職責：**
 - 驗證 API 回應
@@ -76,7 +64,7 @@
 - 支援多種差異類型（值變更、類型變更、新增、刪除）
 - 提供友好的錯誤訊息
 
-### 5. 測試資料管理 (common/file_process.py)
+### 4. 測試資料管理 (common/file_process.py)
 
 **職責：**
 - 讀取 CSV 測試資料
@@ -100,17 +88,10 @@
 3. 測試類別初始化 (setup_class)
    - 執行認證
    ↓
-4. 測試方法執行前 (class_process fixture)
-   - 清理資料庫
-   - 初始化測試資料
-   ↓
-5. 測試方法執行
+4. 測試方法執行
    - 讀取 CSV 測試資料
    - 發送 API 請求
    - 驗證回應
-   ↓
-6. 測試方法執行後
-   - 清理測試資料
    ↓
 7. 生成測試報告
    - Allure 報告
@@ -134,12 +115,8 @@ test_data/
     users/
       expected_result/
         get_users/
-          postgres/
-            TC001.json
-            TC002.json
-          mysql/
-            TC001.json
-            TC002.json
+          TC001.json
+          TC002.json
 ```
 
 ## 🔐 認證機制
@@ -151,47 +128,15 @@ test_data/
 - `auth_invalid`: 無效 token
 - `auth_expired`: 過期 token
 
-## 🗄️ 資料庫管理
-
-### 支援的資料庫
-
-- PostgreSQL
-- MySQL
-
-### SQL 腳本組織
-
-```
-test_data/dev/sql_script/
-  postgres/
-    delete_all.sql
-    users.sql
-    customers.sql
-  mysql/
-    delete_all.sql
-    users.sql
-    customers.sql
-```
-
-### 資料庫操作流程
-
-1. 測試前：執行 `delete_all.sql` 清理資料
-2. 測試前：執行初始化 SQL 腳本
-3. 測試後：執行 `delete_all.sql` 清理資料
-
 ## 🎯 設計模式
 
-### 1. 策略模式
-
-用於支援多資料庫類型：
-- `DBSqlalchemy` 根據 `db_type` 選擇不同的資料庫連接方式
-
-### 2. 模板方法模式
+### 1. 模板方法模式
 
 用於測試執行流程：
 - `conftest.py` 定義測試的前後處理流程
 - 具體測試類別實作測試邏輯
 
-### 3. 工廠模式
+### 2. 工廠模式
 
 用於 API 請求：
 - `BaseAPI` 作為工廠，根據 `service` 參數創建不同的 API 請求
@@ -216,9 +161,9 @@ test_data/dev/sql_script/
 
 ## 📈 效能考量
 
-1. **資料庫連接池**：使用 SQLAlchemy 連接池管理資料庫連接
-2. **測試並行化**：支援 `pytest-xdist` 進行並行測試
-3. **報告生成**：使用 Allure 的單檔案模式加快報告生成
+1. **測試並行化**：支援 `pytest-xdist` 進行並行測試
+2. **報告生成**：使用 Allure 的單檔案模式加快報告生成
+3. **請求快取**：可以實作請求快取機制減少重複請求
 
 ## 🔒 安全性考量
 

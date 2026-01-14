@@ -45,13 +45,6 @@ VERSION = get_env('VERSION', default='/v1')
 SERVICE_A_BASE_URL = get_env('SERVICE_A_BASE_URL')
 SERVICE_A_ACCOUNT = get_env('SERVICE_A_ACCOUNT')
 SERVICE_A_PASSWORD = get_env('SERVICE_A_PASSWORD')
-SERVICE_A_DB_USER_NAME = get_env('SERVICE_A_DB_USER')
-SERVICE_A_DB_PASSWORD = get_env('SERVICE_A_DB_PASSWORD')
-SERVICE_A_DB_PASSWORD_MYSQL = get_env('SERVICE_A_DB_PASSWORD_MYSQL', is_required=False)
-SERVICE_A_DB_NAME = get_env('SERVICE_A_DB_NAME')
-SERVICE_A_DB_HOST = get_env('SERVICE_A_DB_HOST')
-SERVICE_A_DB_PORT = get_env('SERVICE_A_DB_PORT')
-SERVICE_A_DB_PORT_MYSQL = get_env('SERVICE_A_DB_PORT_MYSQL', is_required=False)
 
 # ============================================
 # Service B 配置（對應原始專案中的 BEN）
@@ -59,13 +52,6 @@ SERVICE_A_DB_PORT_MYSQL = get_env('SERVICE_A_DB_PORT_MYSQL', is_required=False)
 SERVICE_B_BASE_URL = get_env('SERVICE_B_BASE_URL')
 SERVICE_B_ACCOUNT = get_env('SERVICE_B_ACCOUNT')
 SERVICE_B_PASSWORD = get_env('SERVICE_B_PASSWORD')
-SERVICE_B_DB_USER_NAME = get_env('SERVICE_B_DB_USER')
-SERVICE_B_DB_PASSWORD = get_env('SERVICE_B_DB_PASSWORD')
-SERVICE_B_DB_PASSWORD_MYSQL = get_env('SERVICE_B_DB_PASSWORD_MYSQL', is_required=False)
-SERVICE_B_DB_NAME = get_env('SERVICE_B_DB_NAME')
-SERVICE_B_DB_HOST = get_env('SERVICE_B_DB_HOST')
-SERVICE_B_DB_PORT = get_env('SERVICE_B_DB_PORT')
-SERVICE_B_DB_PORT_MYSQL = get_env('SERVICE_B_DB_PORT_MYSQL', is_required=False)
 
 # ============================================
 # 測試資料設定

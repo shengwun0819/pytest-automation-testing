@@ -5,7 +5,7 @@
 格式基於 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，
 版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [1.0.0] - 2025-01-XX
+## [1.0.0] - 2026-01-14
 
 ### 新增
 - 初始版本發布

@@ -1,0 +1,4 @@
+case_id,case_description,is_run,tags,status_code,query_string,cookie
+TC001,Get all customers successfully,1,regression,200,?page=1&limit=10,auth
+TC002,Get customers with filter,1,regression,200,?page=1&limit=10&status=active,auth
+TC003,Get customers without authentication,1,regression,401,,no-auth
