@@ -44,11 +44,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 安裝 Allure CLI（用於產生報告）
-      - name: Install Allure
-        uses: simple-elf/allure-report-action@master
-        with:
-          allure-version: 2.24.0
+      # 安裝 Allure CLI（供 Generate Allure Report 步驟使用；需 Java，runner 已內建）
+      - name: Install Allure CLI
+        run: |
+          sudo npm install -g allure-commandline@2.24.0 --unsafe-perm=true
+          allure --version
 
       # 設定環境變數（若未設定 secrets 則使用 Mock Server）
       - name: Configure environment variables

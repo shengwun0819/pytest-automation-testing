@@ -146,15 +146,16 @@ def pytest_terminal_summary(terminalreporter, config, exitstatus):
         os.makedirs(report_dir, exist_ok=True)
         os.makedirs(allure_results_dir, exist_ok=True)
 
-        try:
-            subprocess.run(["which", "allure"],
-                           check=True, capture_output=True)
-        except Exception as e:
+        # 若 CI 未安裝 Allure CLI，不讓 pytest 失敗（報告由 workflow 的 Generate 步驟產生）
+        which_allure = subprocess.run(
+            ["which", "allure"], capture_output=True, text=True
+        )
+        if which_allure.returncode != 0:
             print(
-                f"Error: Allure command not found. "
-                f"Please ensure Allure is installed. Error: {str(e)}"
+                "Allure CLI not found; skipping local report generation. "
+                "In CI, the workflow 'Generate Allure Report' step will produce the report."
             )
-            raise
+            return
 
         result = subprocess.run([
             "allure", "generate",
