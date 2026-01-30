@@ -21,10 +21,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # 多 Python 版本矩陣（僅列 3.8–3.11；3.12/3.13 需 numpy<2，且 pandas 在 3.13 可能觸發 numpy.rec 錯誤，暫不納入）
+    # 僅使用 Python 3.13（與本地 venv 一致；requirements 已限定 numpy<2 以相容 pandas/deepdiff）
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.13"]
 
     steps:
       # 取得程式碼
@@ -79,8 +79,8 @@ jobs:
       - name: Init Mock DB and start Mock Server
         if: env.USE_MOCK_SERVER == 'true'
         run: |
-          python -m mock_server.init_mock_db
-          python -m mock_server.app &
+          python3 -m mock_server.init_mock_db
+          python3 -m mock_server.app &
           sleep 3
           curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5050/v1/auth/login -X POST -H "Content-Type: application/json" -d '{"account":"test_user","password":"test_password"}' || true
 

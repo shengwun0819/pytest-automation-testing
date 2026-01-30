@@ -78,10 +78,10 @@ flask --app mock_server.app:app run --port 5050
 
 ```bash
 # 1. 在專案根目錄建立 mock.db 並初始化範例表與資料
-python -m mock_server.init_mock_db
+python3 -m mock_server.init_mock_db
 
 # 2. 啟動 Mock Server（會自動從 mock.db 取資料回傳）
-python -m mock_server.app
+python3 -m mock_server.app
 ```
 
 預設會在專案根目錄產生 `mock.db`。可設定環境變數 `MOCK_DB_PATH` 指定路徑。若不想從 DB 取資料，可設 `USE_MOCK_DB=false`。

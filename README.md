@@ -50,15 +50,16 @@
 
 > 💡 **詳細使用指南**：請參考 [USAGE.md](USAGE.md) 獲取完整的使用說明和範例。
 
-**前置需求**：Python 3.8+。若系統為「externally managed」環境（如 macOS Homebrew），建議使用虛擬環境（見下方）。
+**前置需求**：Python 3.8+；建議使用 **Python 3.13**（與 GitHub Actions CI 一致，便於除錯）。若系統為「externally managed」環境（如 macOS Homebrew），建議使用虛擬環境（見下方）。
 
 #### 如何使用 venv（虛擬環境）
 
-在專案根目錄執行以下步驟，之後的 `pip`、`pytest`、`python -m mock_server.app` 都會使用虛擬環境內的 Python 與套件：
+在專案根目錄執行以下步驟，之後的 `pip`、`pytest`、`python -m mock_server.app` 都會使用虛擬環境內的 Python 與套件。建議使用 Python 3.13 建立 venv（與 CI 一致）：
 
 ```bash
-# 1. 建立虛擬環境（會產生 .venv 目錄）
+# 1. 建立虛擬環境（會產生 .venv 目錄；建議用 python3.13 或系統預設 python3）
 python3 -m venv .venv
+# 若系統有多個 Python：py -3.13 -m venv .venv（Windows）或 python3.13 -m venv .venv（macOS/Linux）
 
 # 2. 啟動虛擬環境
 # macOS / Linux:

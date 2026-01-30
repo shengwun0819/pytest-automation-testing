@@ -12,7 +12,7 @@
 - 手動觸發（workflow_dispatch）
 
 **功能：**
-- 在 Python 3.8, 3.9, 3.10, 3.11 上執行測試
+- 在 **Python 3.13** 上執行測試（與建議的本地 venv 一致）
 - 未設定 `SERVICE_A_BASE_URL` 時自動啟動 Mock Server 與 Mock DB，無需真實 API 即可通過測試
 - 支援指定測試標籤（`--tags=regression`）
 - 生成 Allure 報告並上傳為 Artifacts
@@ -89,12 +89,12 @@ pytest tests/ \
 
 ### 修改 Python 版本
 
-在 `test.yml` 中修改 `strategy.matrix.python-version`：
+在 `test.yml` 中修改 `strategy.matrix.python-version`（目前僅 3.13）：
 
 ```yaml
 strategy:
   matrix:
-    python-version: ["3.9", "3.10", "3.11"]  # 修改版本列表
+    python-version: ["3.13"]  # 可改為 ["3.12", "3.13"] 等
 ```
 
 ### 新增 Slack 通知（可選）
