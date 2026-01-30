@@ -21,7 +21,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # 多 Python 版本矩陣測試
+    # 多 Python 版本矩陣（僅列 3.8–3.11；3.12/3.13 需 numpy<2，且 pandas 在 3.13 可能觸發 numpy.rec 錯誤，暫不納入）
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
@@ -111,11 +111,16 @@ jobs:
             --allure-results-dir=allure-results \
             -v || true
 
-      # 產生 Allure HTML 報告
+      # 產生 Allure HTML 報告（僅在有 allure-results 時執行，避免找不到目錄而報錯）
       - name: Generate Allure Report
         if: always()
         run: |
-          allure generate allure-results --clean -o allure-report || true
+          if [ -d allure-results ] && [ -n "$(ls -A allure-results 2>/dev/null)" ]; then
+            allure generate allure-results --clean -o allure-report
+          else
+            mkdir -p allure-report
+            echo '<!DOCTYPE html><html><body><p>No test results to display.</p></body></html>' > allure-report/index.html
+          fi
 
       # 上傳 Allure HTML 報告
       - name: Upload Allure Report as Artifact
