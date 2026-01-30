@@ -54,7 +54,6 @@ TEST_DATA_FOLDER = get_env('TEST_DATA_FOLDER', default='./test_data')
 # ============================================
 # 可選配置（用於 CI/CD）
 # ============================================
-AWS_S3_BUCKET_NAME = get_env('AWS_S3_BUCKET_NAME', is_required=False)
 SLACK_WEBHOOK_URL = get_env('SLACK_WEBHOOK_URL', is_required=False)
 REPORT_URL_EXPIRED_DATE = get_env('REPORT_URL_EXPIRED_DATE', is_required=False)
 GITHUB_ACTOR = get_env('GITHUB_ACTOR', is_required=False)

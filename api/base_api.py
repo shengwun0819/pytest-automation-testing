@@ -30,15 +30,15 @@ class BaseAPI:
         Args:
             method: HTTP 方法 (GET, POST, PUT, PATCH, DELETE)
             path: API 路徑
-            params_query: 查詢參數字串 (例如: ?page=1&limit=10)
+            params_query: 用來對 DB 查詢的 filter (例如: ?page=1&limit=10)
             service: 保留參數，目前僅使用 Service A
             **kwargs: 其他 requests 參數 (headers, json, data 等)
 
         Returns:
-            requests.Response: HTTP 回應物件
+            requests.Response: HTTP response object
 
         Raises:
-            requests.exceptions.RequestException: 請求失敗時
+            requests.exceptions.RequestException
         """
         base_url = f"{self.service_a_base_url}{self.version}{path}{params_query}"
 

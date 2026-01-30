@@ -18,11 +18,6 @@ env = config.ENV
 @allure.epic("Users")
 @allure.feature("Get Users")
 class TestGetUsers:
-    """
-    取得使用者列表測試類別
-    
-    展示如何使用 CSV 驅動的參數化測試
-    """
     oauth2 = OAuth2()
     api = APIMethod()
     
@@ -58,11 +53,9 @@ class TestGetUsers:
             f"{case_input['case_id']} - {case_input['case_description']}"
         )
         
-        # 檢查是否應該執行此測試
         if not is_run(run=case_input['is_run'], tags=case_input['tags']):
             pytest.skip('Skip')
         
-        # 發送 API 請求
         resp = Assert.request_switch(
             self,
             method='GET',
@@ -75,14 +68,12 @@ class TestGetUsers:
         
         resp_json = resp.json()
         
-        # 驗證狀態碼
         Assert.validate_status(
             self,
             status_code=resp.status_code,
             case_input=case_input
         )
         
-        # 驗證回應內容
         validator = Validator(
             resp_json=resp_json,
             expected_path=(

@@ -1,6 +1,6 @@
 # 架構設計文件
 
-本文檔說明 API 自動化測試框架的架構設計和設計決策。
+本文檔說明 API 自動化測試框架的架構設計和執行流程。
 
 ## 📐 整體架構
 
@@ -35,48 +35,48 @@
 
 ### 1. 配置管理 (config.py)
 
-**職責：**
+**目的：**
 - 統一管理環境變數
 - 提供多環境支援
 - 驗證必需配置項
 
-**設計決策：**
+**執行流程：**
 - 使用 `python-dotenv` 載入環境變數
 - 提供 `get_env()` 函數統一處理環境變數讀取
 - 支援可選配置項（`is_required=False`）
 
 ### 2. API 基礎類別 (api/base_api.py)
 
-**職責：**
+**目的：**
 - 封裝 HTTP 請求邏輯
 - 支援多服務切換
 - 統一錯誤處理
 
-**設計決策：**
+**執行流程：**
 - 使用 `requests` 庫進行 HTTP 請求
 - 使用單一服務（Service A）的 base URL
 - 預設 timeout 為 20 秒
 
 ### 3. 驗證器 (Validator/validate_common.py)
 
-**職責：**
+**目的：**
 - 驗證 API 回應
 - 比較實際結果和預期結果
 - 提供詳細的差異報告
 
-**設計決策：**
+**執行流程：**
 - 使用 `deepdiff` 進行深度比較
 - 支援多種差異類型（值變更、類型變更、新增、刪除）
 - 提供友好的錯誤訊息
 
 ### 4. 測試資料管理 (common/file_process.py)
 
-**職責：**
+**目的：**
 - 讀取 CSV 測試資料
 - 讀取 JSON 預期結果
 - 處理文字檔案
 
-**設計決策：**
+**執行流程：**
 - 使用 `pandas` 讀取 CSV
 - 支援參數化測試
 - 統一的檔案讀取介面
@@ -141,21 +141,21 @@ test_data/
 - `conftest.py` 定義測試的前後處理流程
 - 具體測試類別實作測試邏輯
 
-### 2. 工廠模式
+### 2. Factory mode
 
 用於 API 請求：
-- `BaseAPI` 作為工廠，根據 `service` 參數創建不同的 API 請求
+- `BaseAPI` 作為 Factory，根據 `service` 參數創建不同的 API 請求
 
-## 🔧 擴展點
+## 🔧 API Endpoint Request
 
-### 新增 API 端點
+### 新增 API Endpoint
 
 1. 在 `api/example/` 中新增方法
 2. 繼承 `BaseAPI` 或使用 `APIMethod`
 
 ### 新增驗證規則
 
-1. 在 `Validator/` 中建立新的驗證器
+1. 在 `Validator/` 中建立新的驗證工具
 2. 繼承 `Validator` 類別
 3. 覆寫 `validate()` 方法
 
@@ -168,7 +168,6 @@ test_data/
 
 1. **測試並行化**：支援 `pytest-xdist` 進行並行測試
 2. **報告生成**：使用 Allure 的單檔案模式加快報告生成
-3. **請求快取**：可以實作請求快取機制減少重複請求
 
 ## 🔒 安全性考量
 
@@ -178,11 +177,11 @@ test_data/
 
 ### 5. Mock Server (mock_server/)
 
-**職責：**
+**目的：**
 - 提供與 test_data 一致的 Mock API（登入、GET /users、GET /customers 等）
 - 依 CSV/預期 JSON 回傳，或從 SQLite Mock DB 查詢（可選）
 
-**設計決策：**
+**執行流程：**
 - 使用 Flask，預設 port 5050
 - 未設定真實 API 時，CI 與本機皆可對接 Mock Server 執行測試
 

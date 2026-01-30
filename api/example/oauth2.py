@@ -1,7 +1,3 @@
-"""
-OAuth2 認證模組
-處理 API 認證和 token 取得
-"""
 import config
 import requests
 from api.base_api import BaseAPI

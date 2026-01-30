@@ -7,8 +7,6 @@ import common.constants as constants
 
 class Assert:
     """
-    斷言類別
-
     提供統一的 API 請求發送和回應驗證方法
     """
 
@@ -24,8 +22,6 @@ class Assert:
         service: str = 'service_a'
     ):
         """
-        統一的 API 請求方法
-
         Args:
             method: HTTP 方法
             cookie_code: 認證類型
@@ -61,14 +57,7 @@ class Assert:
             AssertionError: 當狀態碼不符合預期時
         """
         try:
-            # 支援不同資料庫可能有不同狀態碼的情況
-            if 'status_code_postgres' not in case_input or 'status_code_mysql' not in case_input:
-                assert str(status_code) == case_input['status_code']
-            else:
-                assert (
-                    str(status_code) == case_input['status_code_postgres'] or
-                    str(status_code) == case_input['status_code_mysql']
-                )
+            assert str(status_code) == case_input['status_code']
         except AssertionError:
             print(
                 f"Status code mismatch. "

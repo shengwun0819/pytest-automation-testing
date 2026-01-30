@@ -4,19 +4,19 @@
 
 ## 📋 前置需求
 
-- Python 3.8 或更高版本
+- Python 3.13 或更高版本
 - pip（Python 套件管理器）
 - Allure（用於生成測試報告，可選）
 
 ## 🚀 快速開始
 
-### 步驟 1: 安裝依賴
+### 步驟 1: 安裝套件
 
 ```bash
 # 進入專案目錄
-cd /Users/kevin.lee/Python/api-automation-testing
+cd ./pytest-automation-testing/
 
-# 安裝 Python 依賴套件
+# 安裝 Python 套件
 pip install -r requirements.txt
 ```
 
@@ -25,21 +25,6 @@ pip install -r requirements.txt
 **macOS:**
 ```bash
 brew install allure
-```
-
-**Linux:**
-```bash
-# 下載並安裝 Allure
-wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure-2.24.0.tgz
-tar -zxvf allure-2.24.0.tgz
-sudo mv allure-2.24.0 /opt/allure
-sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
-```
-
-**Windows:**
-```bash
-# 使用 Scoop
-scoop install allure
 ```
 
 ### 步驟 3: 配置環境變數
@@ -220,8 +205,10 @@ allure open allure-report
 
 ```bash
 # pytest 會自動顯示測試結果摘要
-pytest tests/ -v
+pytest tests/ -v -s
 ```
+- `-v`：verbose，顯示每個測試案例的名稱與通過/失敗狀態。
+- `-s`：不擷取 stdout，測試中的 `print()` 與標準輸出會直接顯示在終端機。
 
 #### 7.3 測試報告存放位置
 

@@ -12,7 +12,6 @@ import pytest
 
 import config as app_config
 
-# 全域變數（使用 app_config 避免與 pytest hook 參數 config 混淆）
 env = app_config.ENV
 version = app_config.VERSION
 
@@ -49,9 +48,6 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
-    """
-    pytest 配置初始化（參數名須為 config 以符合 pytest hookspec）
-    """
     global target_tags
     target_tags = config.getoption(
         '--tags', default=None) or config.getoption('--tag', default=None)
@@ -61,9 +57,6 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="session", autouse=True)
 def pre_test(request):
-    """
-    測試前的準備工作（session scope）
-    """
     # 確保 allure-results 為目錄（若為檔案會導致 allure 寫入時 NotADirectoryError）
     if os.path.exists('allure-results') and not os.path.isdir('allure-results'):
         os.remove('allure-results')
@@ -128,7 +121,6 @@ def pytest_terminal_summary(terminalreporter, config, exitstatus):
     is_export = config.getoption('--export', default=None)
     allure_results_dir = config.getoption("--allure-results-dir")
 
-    # 時間與路徑勿含 : 等字元，以免 GitHub Actions artifact 上傳失敗
     time_now = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%M-%S').replace(':', '-')
     result = 'success' if exitstatus == 0 else 'failed'
     commit_sha = (getattr(app_config, 'COMMIT_SHA', None) or 'local').replace(':', '-')
@@ -147,7 +139,6 @@ def pytest_terminal_summary(terminalreporter, config, exitstatus):
         os.makedirs(report_dir, exist_ok=True)
         os.makedirs(allure_results_dir, exist_ok=True)
 
-        # 若 CI 未安裝 Allure CLI，不讓 pytest 失敗（報告由 workflow 的 Generate 步驟產生）
         which_allure = subprocess.run(
             ["which", "allure"], capture_output=True, text=True
         )

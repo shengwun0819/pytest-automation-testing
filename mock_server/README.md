@@ -1,6 +1,6 @@
 # Mock Server / API / DB 啟動方式
 
-本目錄提供 **Mock API Server**，用來模擬原始專案（sygna-bundle-gate-sit + sygna-test-data）中「測試程式 → 後端 API → 測試資料」的互動情境，無需真實後端與資料庫即可跑完整測試流程。
+本目錄提供 **Mock API Server**，用來模擬「測試程式 → 後端 API → 測試資料」的互動情境，無需真實後端與資料庫即可跑完整測試流程。
 
 ---
 
@@ -29,7 +29,7 @@
 **方式 1：直接執行（建議）**
 
 ```bash
-# 在專案根目錄 /Users/kevin.lee/Python/api-automation-testing 執行
+# 在專案根目錄執行
 python -m mock_server.app
 ```
 
@@ -93,7 +93,7 @@ python3 -m mock_server.app
 | 原始專案 (sygna-bundle-gate-sit + sygna-test-data) | 本專案 Mock 情境 |
 |----------------------------------------------------|------------------|
 | 真實 Gate/Hub 後端 API                              | Mock API Server (Flask) |
-| 真實 MySQL/PostgreSQL + SQL 腳本                    | SQLite Mock DB（init_mock_db + mock_server/db.py） |
+| 真實關聯式資料庫 + SQL 腳本                         | SQLite Mock DB（init_mock_db + mock_server/db.py） |
 | sygna-test-data 的 CSV + expected_result JSON      | test_data 的 CSV/JSON；成功案例改由 Mock DB 查詢回傳 |
 
 測試程式（pytest、Assert、Validator）不需改動，僅需將 `SERVICE_A_BASE_URL` 指到 Mock Server，即可在無真實後端與 DB 的環境下重現「架構保存與例子」的互動情境。

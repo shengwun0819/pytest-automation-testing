@@ -57,21 +57,3 @@ class FileProcess:
         """
         with open(path, 'r', encoding='utf-8') as file_input:
             return json.loads(file_input.read())
-
-    @classmethod
-    def read_txt(cls, file_name: str, path: str):
-        """
-        讀取 TXT 檔案
-
-        Args:
-            file_name: TXT 檔案名稱（不含副檔名）
-            path: 檔案所在路徑
-
-        Returns:
-            list: 以逗號分隔的內容列表
-        """
-        file_path = f"./{testdata_folder}/{env}/{path}/{file_name}.txt"
-        with open(file_path, 'r', encoding='utf-8') as file_input:
-            content = file_input.read()
-            content_list = content.split(',')
-            return [item.strip() for item in content_list if item.strip()]

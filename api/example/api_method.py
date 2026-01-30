@@ -1,18 +1,8 @@
-"""
-範例 API 方法
-展示如何實作具體的 API 端點
-"""
 from api.base_api import BaseAPI
 from utils import auth
 
 
 class APIMethod(BaseAPI):
-    """
-    範例 API 方法類別
-    
-    繼承 BaseAPI，提供具體的 API 端點方法
-    可以根據實際需求擴展更多方法
-    """
     
     def method_switch(
         self,
@@ -25,8 +15,6 @@ class APIMethod(BaseAPI):
         service: str = 'service_a'
     ):
         """
-        統一的 API 請求方法
-        
         Args:
             method: HTTP 方法
             path: API 路徑
@@ -37,7 +25,7 @@ class APIMethod(BaseAPI):
             service: 保留參數，目前僅使用 Service A
         
         Returns:
-            requests.Response: HTTP 回應物件
+            requests.Response: HTTP response object
         """
         headers = {
             'Content-Type': 'application/json',

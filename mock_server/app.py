@@ -1,12 +1,12 @@
 """
 Mock API Server
 
-模擬 Gate/Hub 風格的 REST API：
+模擬 REST API：
 - POST /v1/auth/login → 回傳 mock token
 - GET /v1/users、GET /v1/customers → 優先從 Mock DB (SQLite) 查資料回傳；無 DB 時改從 test_data CSV/JSON 回傳
 
 啟動：在專案根目錄執行
-  python -m mock_server.app
+  python3 -m mock_server.app
   或
   flask --app mock_server.app:app run --port 5050
 """
