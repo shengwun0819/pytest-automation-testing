@@ -1,0 +1,157 @@
+# 完整版 CI：多版本 Python 測試 + Allure 報告 + 上傳 artifacts
+name: API Tests
+
+on:
+  # Push 到 main 時執行
+  push:
+    branches: [main]
+  # PR 到 main 時執行
+  pull_request:
+    branches: [main]
+  # 手動觸發，可自訂 tags
+  workflow_dispatch:
+    inputs:
+      tags:
+        # 逗號分隔的標籤（例如：regression,smoke）
+        description: "Test tags to run (e.g., regression,smoke)"
+        required: false
+        default: "regression"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # 僅使用 Python 3.13（與本地 venv 一致；requirements 已限定 numpy<2 以相容 pandas/deepdiff）
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+      # 取得程式碼
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 安裝對應 Python 版本
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      # 安裝專案依賴
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 安裝 Allure CLI（供 Generate Allure Report 步驟使用；需 Java，runner 已內建）
+      - name: Install Allure CLI
+        run: |
+          sudo npm install -g allure-commandline@2.24.0 --unsafe-perm=true
+          allure --version
+
+      # 設定環境變數（若未設定 secrets 則使用 Mock Server）
+      - name: Configure environment variables
+        run: |
+          echo "ENV=dev" >> $GITHUB_ENV
+          echo "VERSION=/v1" >> $GITHUB_ENV
+          echo "TEST_DATA_FOLDER=./test_data" >> $GITHUB_ENV
+          # 未設定 SERVICE_A_BASE_URL 時使用本機 Mock Server（需先啟動 mock_server）
+          if [ -z "${{ secrets.SERVICE_A_BASE_URL }}" ]; then
+            echo "SERVICE_A_BASE_URL=http://127.0.0.1:5050" >> $GITHUB_ENV
+            echo "USE_MOCK_SERVER=true" >> $GITHUB_ENV
+          else
+            echo "SERVICE_A_BASE_URL=${{ secrets.SERVICE_A_BASE_URL }}" >> $GITHUB_ENV
+            echo "USE_MOCK_SERVER=false" >> $GITHUB_ENV
+          fi
+          if [ -z "${{ secrets.SERVICE_A_ACCOUNT }}" ]; then
+            echo "SERVICE_A_ACCOUNT=test_user" >> $GITHUB_ENV
+          else
+            echo "SERVICE_A_ACCOUNT=${{ secrets.SERVICE_A_ACCOUNT }}" >> $GITHUB_ENV
+          fi
+          if [ -z "${{ secrets.SERVICE_A_PASSWORD }}" ]; then
+            echo "SERVICE_A_PASSWORD=test_password" >> $GITHUB_ENV
+          else
+            echo "SERVICE_A_PASSWORD=${{ secrets.SERVICE_A_PASSWORD }}" >> $GITHUB_ENV
+          fi
+
+      # 未設定真實 API 時：建立 Mock DB 並啟動 Mock Server（背景執行）
+      - name: Init Mock DB and start Mock Server
+        if: env.USE_MOCK_SERVER == 'true'
+        run: |
+          python -m mock_server.init_mock_db
+          python -m mock_server.app &
+          sleep 3
+          curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5050/v1/auth/login -X POST -H "Content-Type: application/json" -d '{"account":"test_user","password":"test_password"}' || true
+
+      # 確保 allure-results 為目錄（不刪 allure-report，避免 CI 上權限問題）
+      - name: Prepare allure-results directory
+        run: |
+          rm -rf allure-results
+          mkdir -p allure-results
+
+      # 執行 pytest（依 tags 過濾，使用 --tags 參數）
+      - name: Run tests
+        env:
+          ENV: dev
+          VERSION: /v1
+          TEST_DATA_FOLDER: ./test_data
+          SERVICE_A_BASE_URL: ${{ secrets.SERVICE_A_BASE_URL || 'http://127.0.0.1:5050' }}
+          SERVICE_A_ACCOUNT: ${{ secrets.SERVICE_A_ACCOUNT || 'test_user' }}
+          SERVICE_A_PASSWORD: ${{ secrets.SERVICE_A_PASSWORD || 'test_password' }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          COMMIT_SHA: ${{ github.sha }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          # 如果 workflow_dispatch 有提供 tags，使用它；否則使用預設值
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAGS="${{ github.event.inputs.tags }}"
+          else
+            TAGS="regression"
+          fi
+
+          pytest tests/ \
+            --tags=$TAGS \
+            --alluredir=allure-results \
+            --allure-results-dir=allure-results \
+            -v || true
+
+      # 產生 Allure HTML 報告（輸出到 allure-report-out，避免覆寫既有 allure-report 時權限問題）
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          if [ -d allure-results ] && [ -n "$(ls -A allure-results 2>/dev/null)" ]; then
+            allure generate allure-results --clean -o allure-report-out
+          else
+            mkdir -p allure-report-out
+            echo '<!DOCTYPE html><html><body><p>No test results to display.</p></body></html>' > allure-report-out/index.html
+          fi
+
+      # 上傳 Allure HTML 報告
+      - name: Upload Allure Report as Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-${{ matrix.python-version }}
+          path: allure-report-out
+          retention-days: 7
+
+      # 上傳 Allure 原始結果
+      - name: Upload Allure Results as Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.python-version }}
+          path: allure-results
+          retention-days: 7
+
+      # 上傳自動產出的 test_report HTML（若存在）
+      - name: Upload Test Report HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-${{ matrix.python-version }}
+          path: test_report
+          retention-days: 7
+          if-no-files-found: ignore

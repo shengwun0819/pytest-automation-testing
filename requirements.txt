@@ -1,0 +1,40 @@
+# Build / venv 必備（Python 3.12+ 建立 venv 後若無 setuptools 會導致 pandas/numpy 安裝失敗）
+setuptools>=65.0.0
+wheel
+
+# Testing Framework
+pytest==7.0.0
+pytest-html==3.1.1
+pytest-order==1.1.0
+pytest-xdist==3.3.1
+
+# Test Reporting
+allure-pytest==2.9.45
+allure-python-commons==2.9.45
+
+# HTTP Requests
+requests==2.31.0
+
+# Mock Server (Flask)
+flask==3.0.0
+
+# Data Processing（放寬版本以支援 Python 3.12/3.13；numpy<2 以相容 deepdiff 6.4.1）
+pandas>=1.5.0,<3
+numpy>=1.23.3,<2
+
+# Configuration
+python-dotenv==0.19.2
+
+# Utilities
+PyJWT==2.3.0
+cryptography==41.0.3
+deepdiff==6.4.1
+Faker==15.0.0
+
+# Code Quality
+flake8==5.0.4
+autopep8==1.6.0
+isort==5.6.4
+
+# AWS (Optional, for CI/CD)
+boto3==1.29.0

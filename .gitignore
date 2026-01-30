@@ -1,0 +1,44 @@
+# Environment
+.env
+.venv
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Testing
+allure-results/
+allure-report/
+test_report/
+.pytest_cache/
+mock.db
+
+# Mock Server
+.venv-mock/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test Data (if contains sensitive info)
+# test_data/dev/

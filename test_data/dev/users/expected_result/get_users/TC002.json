@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "E001",
+    "message": "Invalid input parameter",
+    "details": "Page number must be greater than 0"
+  }
+}
