@@ -133,10 +133,10 @@ strategy:
 - **原因**：NumPy 2.0 移除了 `numpy.rec`，而 pandas 在讀 CSV 時會用到，導致 Mock Server 在 Python 3.13 上失敗。
 - **作法**：`requirements.txt` 已限定 `numpy>=1.23.3,<2`；CI 的 Python 矩陣目前僅使用 **3.8–3.11**，未納入 3.12/3.13。若你在 fork 中加入 3.13，請先移除以通過 CI，或等 pandas/numpy 完全支援 3.13 再啟用。
 
-### 「NotADirectoryError」或「allure-results/...-container.json」／「allure-report/index.html: Permission denied」
+### 「NotADirectoryError」或「allure-results/...-container.json」／「allure-report/...: Permission denied」
 
-- **原因**：`allure-results` 在 CI 上被當成檔案而非目錄，或 `allure-report` 權限／路徑衝突，導致 allure 寫入失敗。
-- **作法**：workflow 已在「Run tests」前加入 **Prepare allure-results directory**（`rm -rf allure-results allure-report && mkdir -p allure-results`），並在「Generate Allure Report」開頭清除 `allure-report`；conftest 的 `pre_test` 也會確保 `allure-results` 為目錄。若仍發生，請確認遠端 workflow 與 conftest 已同步上述修改。
+- **原因**：`allure-results` 在 CI 上被當成檔案而非目錄，或 `rm -rf allure-report` 因權限被拒失敗。
+- **作法**：workflow 已改為 (1) **Prepare** 只清 `allure-results`、不刪 `allure-report`；(2) **Generate** 輸出到新目錄 `allure-report-out`，不再覆寫既有 `allure-report`；(3) **Upload** 上傳 `allure-report-out`。conftest 的 `pre_test` 會確保 `allure-results` 為目錄。若仍發生，請確認遠端 workflow 與 conftest 已同步上述修改。
 
 ### 「ModuleNotFoundError: No module named 'allure_pytest'」
 
