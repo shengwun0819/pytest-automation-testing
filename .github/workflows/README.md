@@ -133,6 +133,14 @@ strategy:
 - **原因**：NumPy 2.0 移除了 `numpy.rec`，而 pandas 在讀 CSV 時會用到，導致 Mock Server 在 Python 3.13 上失敗。
 - **作法**：`requirements.txt` 已限定 `numpy>=1.23.3,<2`；CI 的 Python 矩陣目前僅使用 **3.8–3.11**，未納入 3.12/3.13。若你在 fork 中加入 3.13，請先移除以通過 CI，或等 pandas/numpy 完全支援 3.13 再啟用。
 
+### 「ModuleNotFoundError: No module named 'allure_pytest'」
+
+- **原因**：Run pytest 時找不到 `allure_pytest`，代表 **Install dependencies** 沒有正確裝到 `allure-pytest`（例如沒跑 `pip install -r requirements.txt`，或用了舊的 pip 快取）。
+- **作法**：
+  1. 確認 **Install dependencies** 步驟有執行：`pip install -r requirements.txt`（且專案根目錄的 `requirements.txt` 內含 `allure-pytest`、`allure-python-commons`）。
+  2. 若有使用 **actions/cache** 快取 pip：快取 key 應包含 `requirements.txt` 的 hash（例如 `${{ hashFiles('requirements.txt') }}`），否則可能還原到未含 allure 的舊環境。
+  3. 暫時解法：在 **Run pytest** 前加一步明確安裝：`pip install allure-pytest allure-python-commons`，或先停用該 job 的 cache 重跑一次，確認是否為快取問題。
+
 ### 「Job was cancelled」
 
 - **原因**：多為手動取消、或並行/排程觸發的 cancel 政策，少數為 runner 逾時。

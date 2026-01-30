@@ -79,8 +79,8 @@ jobs:
       - name: Init Mock DB and start Mock Server
         if: env.USE_MOCK_SERVER == 'true'
         run: |
-          python3 -m mock_server.init_mock_db
-          python3 -m mock_server.app &
+          python -m mock_server.init_mock_db
+          python -m mock_server.app &
           sleep 3
           curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5050/v1/auth/login -X POST -H "Content-Type: application/json" -d '{"account":"test_user","password":"test_password"}' || true
 
