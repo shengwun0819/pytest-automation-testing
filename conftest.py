@@ -128,9 +128,10 @@ def pytest_terminal_summary(terminalreporter, config, exitstatus):
     is_export = config.getoption('--export', default=None)
     allure_results_dir = config.getoption("--allure-results-dir")
 
-    time_now = datetime.strftime(datetime.now(), '%Y-%m-%d_%H:%M:%S')
+    # 時間與路徑勿含 : 等字元，以免 GitHub Actions artifact 上傳失敗
+    time_now = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%M-%S').replace(':', '-')
     result = 'success' if exitstatus == 0 else 'failed'
-    commit_sha = getattr(app_config, 'COMMIT_SHA', None) or 'local'
+    commit_sha = (getattr(app_config, 'COMMIT_SHA', None) or 'local').replace(':', '-')
     report_dir = f"test_report/report_{commit_sha}_{result}_{time_now}"
     report_name = f'report_{commit_sha}_{result}_{time_now}.html'
 
