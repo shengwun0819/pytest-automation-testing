@@ -1,285 +1,158 @@
-# API Automation Testing Framework
+# GitHub Actions Workflows
 
-一個完整的 REST API 自動化測試框架範例，展示如何建立可擴展、可維護的 API 測試系統。
+本目錄包含專案的 CI/CD 工作流程設定。
 
-## 📋 專案特色
+## 📋 可用的 Workflows
 
-- ✅ **多環境支援**：支援多個測試環境配置
-- ✅ **資料驅動測試**：使用 CSV 檔案進行參數化測試
-- ✅ **完整的驗證系統**：自動驗證 API 回應結構和內容
-- ✅ **測試報告**：使用 Allure 生成美觀的測試報告
-- ✅ **CI/CD 整合**：支援自動化測試和報告上傳
-- ✅ **模組化設計**：清晰的架構，易於擴展和維護
+### 1. `test.yml` - 完整測試流程（多 Python 版本）
 
-## 📁 專案結構
+**觸發條件：**
+- Push 到 `main` 分支
+- Pull Request 到 `main` 分支
+- 手動觸發（workflow_dispatch）
 
-```
-.
-├── api/                    # API 請求封裝
-│   ├── base_api.py        # API 基礎類別
-│   └── example/           # 範例 API 方法
-│       └── api_method.py
-├── common/                # 共用工具
-│   ├── constants.py       # 常數定義
-│   └── file_process.py    # 檔案處理工具
-├── config.py              # 配置管理
-├── conftest.py            # pytest 配置和 fixtures
-├── tests/                 # 測試案例
-│   ├── users/            # 使用者相關測試
-│   ├── customers/        # 客戶相關測試
-│   └── ...
-├── test_data/            # 測試資料
-│   └── dev/              # 開發環境測試資料
-│       ├── *.csv         # 測試案例資料
-│       └── expected_result/  # 預期結果
-├── mock_server/          # Mock API Server（可選，模擬後端與 test_data 互動）
-│   ├── app.py            # Flask Mock API 入口
-│   ├── router.py         # 請求對應 CSV/JSON 邏輯
-│   ├── init_mock_db.py    # 可選：SQLite Mock DB 初始化
-│   └── README.md         # Mock 啟動方式說明
-├── test_report/          # 測試報告（執行測試時自動生成）
-├── utils/                # 工具類別
-│   ├── assert_response.py    # 回應斷言
-│   ├── auth.py               # 認證工具
-│   └── ...
-└── Validator/            # 驗證器
-    └── validate_common.py     # 通用驗證器
-```
+**功能：**
+- 在 **Python 3.13** 上執行測試（與建議的本地 venv 一致）
+- 未設定 `SERVICE_A_BASE_URL` 時自動啟動 Mock Server 與 Mock DB，無需真實 API 即可通過測試
+- 支援指定測試標籤（`--tags=regression`）
+- 生成 Allure 報告並上傳為 Artifacts
 
-## 🚀 快速開始
-
-> 💡 **詳細使用指南**：請參考 [USAGE.md](USAGE.md) 獲取完整的使用說明和範例。
-
-**前置需求**：Python 3.8+；建議使用 **Python 3.13**（與 GitHub Actions CI 一致，便於除錯）。若系統為「externally managed」環境（如 macOS Homebrew），建議使用虛擬環境（見下方）。
-
-#### 如何使用 venv（虛擬環境）
-
-在專案根目錄執行以下步驟，之後的 `pip`、`pytest`、`python -m mock_server.app` 都會使用虛擬環境內的 Python 與套件。建議使用 Python 3.13 建立 venv（與 CI 一致）：
-
+**使用方式：**
 ```bash
-# 1. 建立虛擬環境（會產生 .venv 目錄；建議用 python3.13 或系統預設 python3）
-python3 -m venv .venv
-# 若系統有多個 Python：py -3.13 -m venv .venv（Windows）或 python3.13 -m venv .venv（macOS/Linux）
-
-# 2. 啟動虛擬環境
-# macOS / Linux:
-source .venv/bin/activate
-
-# 3. 之後在此 shell 中安裝依賴與執行指令
-pip3 install -r requirements.txt
-# 例如：pytest tests/ ...、python -m mock_server.app
+# 在 GitHub Actions 頁面手動觸發
+# 可以指定要執行的測試標籤（例如：regression,smoke）
 ```
 
-關閉虛擬環境：輸入 `deactivate`。下次要跑測試或 Mock 時，先 `source .venv/bin/activate`（或 Windows 對應指令）再執行即可。
+### 2. `publish-report.yml` - 發布測試報告到 GitHub Pages
 
-### 1. 安裝依賴
+**觸發條件：**
+- `test.yml`（API Tests）完成後自動觸發
 
-```bash
-pip3 install -r requirements.txt
+**功能：**
+- 下載 Allure 報告
+- 發布到 GitHub Pages（僅 main 分支）
+
+## 🔧 配置 GitHub Secrets
+
+為了讓 GitHub Actions 能夠正常執行，需要在 GitHub Repository Settings 中配置以下 Secrets：
+
+### 可選的 Secrets
+
+若**不設定** `SERVICE_A_BASE_URL`，CI 會自動啟動專案內建的 Mock Server（port 5050）與 Mock DB，測試可正常通過。若需對接真實 API，請設定：
+
+- `SERVICE_A_BASE_URL` - Service A 的 API 基礎 URL（例如 `https://api.example.com`）
+- `SERVICE_A_ACCOUNT` - Service A 的帳號
+- `SERVICE_A_PASSWORD` - Service A 的密碼
+
+### 如何設定 Secrets
+
+1. 前往 GitHub Repository
+2. 點擊 **Settings** → **Secrets and variables** → **Actions**
+3. 點擊 **New repository secret**
+4. 輸入 Secret 名稱和值
+5. 點擊 **Add secret**
+
+## 📊 查看測試結果
+
+### 在 GitHub Actions 中查看
+
+1. 前往 GitHub Repository
+2. 點擊 **Actions** 標籤
+3. 選擇對應的 workflow
+4. 查看執行結果
+
+### 下載測試報告
+
+1. 在 workflow 執行完成後
+2. 在 workflow 執行頁面底部找到 **Artifacts**
+3. 下載 `allure-report` 或 `test-report` artifact
+4. 解壓縮後開啟 `index.html` 查看報告
+
+### 在 GitHub Pages 中查看（如果啟用）
+
+如果啟用了 `publish-report.yml`，報告會發布到：
+```
+https://{username}.github.io/{repository}/test-report/
 ```
 
-（若已依上方使用 venv，請先 `source .venv/bin/activate` 再執行。）
+## 🛠️ 自訂 Workflow
 
-若出現 `Cannot import 'setuptools.build_meta'` 或建置 numpy/pandas 失敗，請先執行：
-`pip3 install --upgrade pip setuptools wheel`，再重新執行 `pip3 install -r requirements.txt`（Python 3.12+ 的 venv 預設可能未包含 setuptools）。
+### 修改測試標籤
 
-### 2. 配置環境變數
+在 `test.yml` 中修改：
 
-複製 `.env.sample` 並建立 `.env` 檔案（**必做**，否則執行時會缺少 `SERVICE_A_BASE_URL` 等設定）：
-
-```bash
-cp .env.sample .env
+```yaml
+pytest tests/ \
+  --tags=regression,smoke \  # 修改這裡的標籤
+  --alluredir=allure-results
 ```
 
-編輯 `.env` 檔案，填入你的測試環境配置：
+### 修改 Python 版本
 
-```env
-# 環境設定
-ENV=dev
-VERSION=/v1
+在 `test.yml` 中修改 `strategy.matrix.python-version`（目前僅 3.13）：
 
-# Service A 配置（對應原始專案中的 ORI）
-SERVICE_A_BASE_URL=https://api.example.com
-SERVICE_A_ACCOUNT=test_user
-SERVICE_A_PASSWORD=test_password
-
-# 測試資料路徑
-TEST_DATA_FOLDER=./test_data
+```yaml
+strategy:
+  matrix:
+    python-version: ["3.13"]  # 可改為 ["3.12", "3.13"] 等
 ```
 
-### 3. 準備測試資料
+### 新增 Slack 通知（可選）
 
-將測試資料放在 `test_data/dev/` 目錄下，包含：
-- CSV 檔案：定義測試案例參數
-- `expected_result/` 目錄：存放預期回應的 JSON 檔案
+如果需要 Slack 通知，可以在 workflow 中新增：
 
-### 4. 執行測試
-
-```bash
-# 執行所有測試（未加 --tags 時會執行 CSV 中 is_run=1 的案例）
-pytest tests/ --alluredir=allure-results
-
-# 執行特定標籤的測試
-pytest tests/ --tags=regression --alluredir=allure-results
-
-# 生成 Allure 報告（需先安裝 Allure CLI，可選）
-allure serve allure-results
+```yaml
+- name: Send Slack Notification
+  if: always()
+  uses: 8398a7/action-slack@v3
+  with:
+    status: ${{ job.status }}
+    text: 'Test completed'
+    webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+  env:
+    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 ```
 
-> **注意**：測試結束後會自動嘗試產生 Allure HTML 報告；若未安裝 `allure` 指令，該步驟會失敗，但不影響測試結果。
+## 📝 注意事項
 
-### 5. 使用 Mock 環境（可選）
+1. **測試環境**：GitHub Actions 使用 Ubuntu 環境，確保測試可以在 Linux 環境下執行
+2. **API 連線**：確保測試的 API 可以從 GitHub Actions 環境中存取
+3. **Secrets 安全**：不要將敏感資訊直接寫在 workflow 檔案中，使用 Secrets
+4. **Artifacts 保留**：預設保留 7-30 天，可以根據需求調整
+5. **並行執行**：多個 workflow 可能會並行執行，注意資源使用
 
-若不想依賴真實後端與 DB，可使用 **Mock API Server** 模擬 Gate/Hub 與 test_data 的互動情境：
+## 🔧 疑難排解
 
-1. **啟動 Mock Server**（在專案根目錄）：
-   ```bash
-   python -m mock_server.app
-   ```
-2. **設定環境變數**，讓測試打 Mock：
-   ```bash
-   export SERVICE_A_BASE_URL=http://127.0.0.1:5050
-   export SERVICE_A_ACCOUNT=any
-   export SERVICE_A_PASSWORD=any
-   ```
-3. **執行測試**（在另一終端）：`pytest tests/ --tags=regression --alluredir=allure-results`
+### 「Could not find allure-results directory」
 
-亦可先編輯 `.env`，將 `SERVICE_A_BASE_URL` 改為 `http://127.0.0.1:5050`，則不需每次 export。可選：使用 **Mock DB（SQLite）** 初始化範例資料，詳見 [mock_server/README.md](mock_server/README.md)。
+- **原因**：產生 Allure 報告的 job 在**另一個 job** 執行，且沒有先下載 `test` job 產生的 `allure-results` artifact。
+- **作法**：本專案已在**同一個** `test` job 內產生報告並上傳；若你拆成兩個 job，請在報告 job 開頭加上「Download artifact」步驟，下載 `allure-results-${{ matrix.python-version }}`（或你上傳的 artifact 名稱），再執行 `allure generate`。
 
-**驗證 Mock 與測試流程是否可執行**：依序完成「安裝依賴 → 複製 .env.sample 為 .env 並改為 Mock URL → 終端一執行 `python -m mock_server.app` → 終端二執行 `pytest tests/ --tags=regression --alluredir=allure-results`」。若測試通過且 Mock Server 有收到請求，即表示流程正常。
+### 「ModuleNotFoundError: No module named 'numpy.rec'」（Python 3.13）
 
-## 📝 測試案例範例
+- **原因**：NumPy 2.0 移除了 `numpy.rec`，而 pandas 在讀 CSV 時會用到，導致 Mock Server 在 Python 3.13 上失敗。
+- **作法**：`requirements.txt` 已限定 `numpy>=1.23.3,<2`；CI 的 Python 矩陣目前僅使用 **3.8–3.11**，未納入 3.12/3.13。若你在 fork 中加入 3.13，請先移除以通過 CI，或等 pandas/numpy 完全支援 3.13 再啟用。
 
-### CSV 驅動測試
+### 「NotADirectoryError」或「allure-results/...-container.json」／「allure-report/index.html: Permission denied」
 
-在 `test_data/dev/users/get_users.csv` 中定義測試案例：
+- **原因**：`allure-results` 在 CI 上被當成檔案而非目錄，或 `allure-report` 權限／路徑衝突，導致 allure 寫入失敗。
+- **作法**：workflow 已在「Run tests」前加入 **Prepare allure-results directory**（`rm -rf allure-results allure-report && mkdir -p allure-results`），並在「Generate Allure Report」開頭清除 `allure-report`；conftest 的 `pre_test` 也會確保 `allure-results` 為目錄。若仍發生，請確認遠端 workflow 與 conftest 已同步上述修改。
 
-```csv
-case_id,case_description,is_run,tags,status_code,query_string,cookie
-TC001,Get all users successfully,1,regression,200,?page=1&limit=10,auth
-TC002,Get users with invalid page,1,regression,400,?page=-1,auth
-```
+### 「ModuleNotFoundError: No module named 'allure_pytest'」
 
-### 測試程式碼
+- **原因**：Run pytest 時找不到 `allure_pytest`，代表 **Install dependencies** 沒有正確裝到 `allure-pytest`（例如沒跑 `pip install -r requirements.txt`，或用了舊的 pip 快取）。
+- **作法**：
+  1. 確認 **Install dependencies** 步驟有執行：`pip install -r requirements.txt`（且專案根目錄的 `requirements.txt` 內含 `allure-pytest`、`allure-python-commons`）。
+  2. 若有使用 **actions/cache** 快取 pip：快取 key 應包含 `requirements.txt` 的 hash（例如 `${{ hashFiles('requirements.txt') }}`），否則可能還原到未含 allure 的舊環境。
+  3. 暫時解法：在 **Run pytest** 前加一步明確安裝：`pip install allure-pytest allure-python-commons`，或先停用該 job 的 cache 重跑一次，確認是否為快取問題。
 
-```python
-import allure
-import pytest
-from api.example.api_method import APIMethod
-from common.file_process import FileProcess
-from utils.assert_response import Assert
+### 「Job was cancelled」
 
-@allure.epic("Users")
-@allure.feature("Get Users")
-class TestGetUsers:
-    api = APIMethod()
-    path = '/users'
+- **原因**：多為手動取消、或並行/排程觸發的 cancel 政策，少數為 runner 逾時。
+- **作法**：確認同一 branch 沒有重複觸發；若測試與報告都通過但 job 仍顯示 cancelled，可再跑一次或檢查 repo 的 Actions 設定（concurrency、timeout）。
 
-    @allure.story("Positive Test Cases")
-    @pytest.mark.parametrize('case_input', FileProcess.read_csv_data('get_users', 'users'))
-    def test_get_users(self, is_run, case_input):
-        allure.dynamic.title(f"{case_input['case_id']} - {case_input['case_description']}")
-        
-        if not is_run(run=case_input['is_run'], tags=case_input['tags']):
-            pytest.skip('Skip')
-        
-        resp = Assert.request_switch(
-            self,
-            method='GET',
-            cookie_code=case_input['cookie'],
-            params_query=case_input['query_string'],
-            path=self.path,
-            api=self.api,
-            cookie=self.auth   # 來自 setup_class 的 OAuth2 登入結果
-        )
-        
-        Assert.validate_status(resp.status_code, case_input)
-        # 驗證回應內容（如使用 Validator 比對 expected_result JSON）...
-```
+## 🔗 相關資源
 
-## 🔧 核心組件說明
-
-### 1. BaseAPI
-
-所有 API 請求的基礎類別，封裝了 HTTP 請求邏輯。
-
-### 2. Config
-
-統一管理環境變數和配置，支援多環境切換。
-
-### 3. FileProcess
-
-提供讀取 CSV、JSON 等測試資料檔案的方法。
-
-### 4. Validator
-
-自動驗證 API 回應，支援深度比較和自訂驗證規則。
-
-### 5. Assert
-
-提供統一的斷言方法，簡化測試程式碼。
-
-## 📊 測試報告
-
-使用 Allure 生成測試報告：
-
-```bash
-# 生成報告
-allure generate allure-results --clean -o allure-report
-
-# 開啟報告
-allure open allure-report
-```
-
-> **注意**：執行測試時，框架會自動在 `test_report/` 目錄下生成 HTML 報告檔案。此目錄會在首次執行測試時自動建立，無需手動建立。
-
-## 🛠️ 自訂擴展
-
-### 新增 API 端點
-
-1. 在 `api/example/api_method.py` 中新增方法
-2. 繼承 `BaseAPI` 類別
-3. 使用 `request()` 方法發送請求
-
-### 新增驗證器
-
-1. 在 `Validator/` 目錄下建立新的驗證器
-2. 繼承 `Validator` 類別
-3. 實作自訂驗證邏輯
-
-### 新增測試案例
-
-1. 在 `tests/` 目錄下建立測試檔案
-2. 使用 CSV 檔案定義測試參數
-3. 在 `expected_result/` 中放置預期結果
-
-## 📚 最佳實踐
-
-1. **測試資料管理**：使用 CSV 檔案管理測試參數，易於維護
-2. **預期結果驗證**：使用 JSON 檔案儲存預期結果，確保一致性
-3. **標籤管理**：使用標籤分類測試案例，方便選擇性執行
-4. **錯誤處理**：完善的錯誤處理和日誌記錄
-5. **環境隔離**：使用不同的環境配置進行測試，避免影響生產環境
-
-## 🔄 CI/CD
-
-本專案包含 GitHub Actions 工作流程，支援自動化測試：
-
-- **自動測試**：Push 或 PR 時自動執行測試
-- **多版本測試**：支援多個 Python 版本測試
-- **測試報告**：自動生成並上傳 Allure 測試報告
-- **報告發布**：可選的 GitHub Pages 報告發布
-
-詳細說明請參考 [.github/workflows/README.md](.github/workflows/README.md)
-
-## 🤝 貢獻
-
-歡迎提交 Issue 和 Pull Request！
-
-## 📄 授權
-
-MIT License
-
-## 🙏 致謝
-
-本專案改寫自實際的企業級 API 自動化測試框架，保留了核心架構和設計模式，移除了公司特定的業務邏輯和機密資訊，作為學習和參考的範例。
+- [GitHub Actions 文件](https://docs.github.com/en/actions)
+- [pytest 文件](https://docs.pytest.org/)
+- [Allure 文件](https://docs.qameta.io/allure/)
