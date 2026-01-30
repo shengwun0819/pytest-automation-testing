@@ -32,6 +32,11 @@
 │   └── dev/              # 開發環境測試資料
 │       ├── *.csv         # 測試案例資料
 │       └── expected_result/  # 預期結果
+├── mock_server/          # Mock API Server（可選，模擬後端與 test_data 互動）
+│   ├── app.py            # Flask Mock API 入口
+│   ├── router.py         # 請求對應 CSV/JSON 邏輯
+│   ├── init_mock_db.py    # 可選：SQLite Mock DB 初始化
+│   └── README.md         # Mock 啟動方式說明
 ├── test_report/          # 測試報告（執行測試時自動生成）
 ├── utils/                # 工具類別
 │   ├── assert_response.py    # 回應斷言
@@ -45,15 +50,41 @@
 
 > 💡 **詳細使用指南**：請參考 [USAGE.md](USAGE.md) 獲取完整的使用說明和範例。
 
+**前置需求**：Python 3.8+。若系統為「externally managed」環境（如 macOS Homebrew），建議使用虛擬環境（見下方）。
+
+#### 如何使用 venv（虛擬環境）
+
+在專案根目錄執行以下步驟，之後的 `pip`、`pytest`、`python -m mock_server.app` 都會使用虛擬環境內的 Python 與套件：
+
+```bash
+# 1. 建立虛擬環境（會產生 .venv 目錄）
+python3 -m venv .venv
+
+# 2. 啟動虛擬環境
+# macOS / Linux:
+source .venv/bin/activate
+
+# 3. 之後在此 shell 中安裝依賴與執行指令
+pip3 install -r requirements.txt
+# 例如：pytest tests/ ...、python -m mock_server.app
+```
+
+關閉虛擬環境：輸入 `deactivate`。下次要跑測試或 Mock 時，先 `source .venv/bin/activate`（或 Windows 對應指令）再執行即可。
+
 ### 1. 安裝依賴
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
+
+（若已依上方使用 venv，請先 `source .venv/bin/activate` 再執行。）
+
+若出現 `Cannot import 'setuptools.build_meta'` 或建置 numpy/pandas 失敗，請先執行：
+`pip3 install --upgrade pip setuptools wheel`，再重新執行 `pip3 install -r requirements.txt`（Python 3.12+ 的 venv 預設可能未包含 setuptools）。
 
 ### 2. 配置環境變數
 
-複製 `.env.sample` 並建立 `.env` 檔案：
+複製 `.env.sample` 並建立 `.env` 檔案（**必做**，否則執行時會缺少 `SERVICE_A_BASE_URL` 等設定）：
 
 ```bash
 cp .env.sample .env
@@ -71,11 +102,6 @@ SERVICE_A_BASE_URL=https://api.example.com
 SERVICE_A_ACCOUNT=test_user
 SERVICE_A_PASSWORD=test_password
 
-# Service B 配置（對應原始專案中的 BEN）
-SERVICE_B_BASE_URL=https://api.example.com
-SERVICE_B_ACCOUNT=test_user
-SERVICE_B_PASSWORD=test_password
-
 # 測試資料路徑
 TEST_DATA_FOLDER=./test_data
 ```
@@ -89,15 +115,37 @@ TEST_DATA_FOLDER=./test_data
 ### 4. 執行測試
 
 ```bash
-# 執行所有測試
+# 執行所有測試（未加 --tags 時會執行 CSV 中 is_run=1 的案例）
 pytest tests/ --alluredir=allure-results
 
 # 執行特定標籤的測試
-pytest tests/ --tag=regression --alluredir=allure-results
+pytest tests/ --tags=regression --alluredir=allure-results
 
-# 生成 Allure 報告
+# 生成 Allure 報告（需先安裝 Allure CLI，可選）
 allure serve allure-results
 ```
+
+> **注意**：測試結束後會自動嘗試產生 Allure HTML 報告；若未安裝 `allure` 指令，該步驟會失敗，但不影響測試結果。
+
+### 5. 使用 Mock 環境（可選）
+
+若不想依賴真實後端與 DB，可使用 **Mock API Server** 模擬 Gate/Hub 與 test_data 的互動情境：
+
+1. **啟動 Mock Server**（在專案根目錄）：
+   ```bash
+   python -m mock_server.app
+   ```
+2. **設定環境變數**，讓測試打 Mock：
+   ```bash
+   export SERVICE_A_BASE_URL=http://127.0.0.1:5050
+   export SERVICE_A_ACCOUNT=any
+   export SERVICE_A_PASSWORD=any
+   ```
+3. **執行測試**（在另一終端）：`pytest tests/ --tags=regression --alluredir=allure-results`
+
+亦可先編輯 `.env`，將 `SERVICE_A_BASE_URL` 改為 `http://127.0.0.1:5050`，則不需每次 export。可選：使用 **Mock DB（SQLite）** 初始化範例資料，詳見 [mock_server/README.md](mock_server/README.md)。
+
+**驗證 Mock 與測試流程是否可執行**：依序完成「安裝依賴 → 複製 .env.sample 為 .env 並改為 Mock URL → 終端一執行 `python -m mock_server.app` → 終端二執行 `pytest tests/ --tags=regression --alluredir=allure-results`」。若測試通過且 Mock Server 有收到請求，即表示流程正常。
 
 ## 📝 測試案例範例
 
@@ -140,11 +188,12 @@ class TestGetUsers:
             cookie_code=case_input['cookie'],
             params_query=case_input['query_string'],
             path=self.path,
-            api=self.api
+            api=self.api,
+            cookie=self.auth   # 來自 setup_class 的 OAuth2 登入結果
         )
         
         Assert.validate_status(resp.status_code, case_input)
-        # 驗證回應內容...
+        # 驗證回應內容（如使用 Validator 比對 expected_result JSON）...
 ```
 
 ## 🔧 核心組件說明
@@ -210,6 +259,17 @@ allure open allure-report
 3. **標籤管理**：使用標籤分類測試案例，方便選擇性執行
 4. **錯誤處理**：完善的錯誤處理和日誌記錄
 5. **環境隔離**：使用不同的環境配置進行測試，避免影響生產環境
+
+## 🔄 CI/CD
+
+本專案包含 GitHub Actions 工作流程，支援自動化測試：
+
+- **自動測試**：Push 或 PR 時自動執行測試
+- **多版本測試**：支援多個 Python 版本測試
+- **測試報告**：自動生成並上傳 Allure 測試報告
+- **報告發布**：可選的 GitHub Pages 報告發布
+
+詳細說明請參考 [.github/workflows/README.md](.github/workflows/README.md)
 
 ## 🤝 貢獻
 

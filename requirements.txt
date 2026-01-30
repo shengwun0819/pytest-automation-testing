@@ -1,3 +1,7 @@
+# Build / venv 必備（Python 3.12+ 建立 venv 後若無 setuptools 會導致 pandas/numpy 安裝失敗）
+setuptools>=65.0.0
+wheel
+
 # Testing Framework
 pytest==7.0.0
 pytest-html==3.1.1
@@ -11,9 +15,12 @@ allure-python-commons==2.9.45
 # HTTP Requests
 requests==2.31.0
 
-# Data Processing
-pandas==1.5.0
-numpy==1.23.3
+# Mock Server (Flask)
+flask==3.0.0
+
+# Data Processing（放寬版本以支援 Python 3.12/3.13；numpy<2 以相容 deepdiff 6.4.1）
+pandas>=1.5.0,<3
+numpy>=1.23.3,<2
 
 # Configuration
 python-dotenv==0.19.2

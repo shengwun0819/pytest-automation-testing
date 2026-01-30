@@ -71,17 +71,12 @@ SERVICE_A_ACCOUNT=your_username
 SERVICE_A_PASSWORD=your_password
 
 # ============================================
-# Service B 配置（如果需要的話）
-# ============================================
-SERVICE_B_BASE_URL=https://api.example.com
-SERVICE_B_ACCOUNT=your_username
-SERVICE_B_PASSWORD=your_password
-
-# ============================================
 # 測試資料設定
 # ============================================
 TEST_DATA_FOLDER=./test_data
 ```
+
+**使用 Mock 環境（可選）**：若要以專案內建的 Mock Server 執行測試（無需真實 API），請將 `SERVICE_A_BASE_URL` 設為 `http://127.0.0.1:5050`，並在執行測試前於另一終端啟動 Mock Server（`python -m mock_server.app`）與可選的 Mock DB（`python -m mock_server.init_mock_db`）。詳見 [mock_server/README.md](mock_server/README.md)。
 
 ### 步驟 4: 調整 API 認證方法
 
@@ -169,10 +164,10 @@ pytest tests/customers/ --alluredir=allure-results
 
 ```bash
 # 只執行標籤為 regression 的測試
-pytest tests/ --tag=regression --alluredir=allure-results
+pytest tests/ --tags=regression --alluredir=allure-results
 
 # 執行多個標籤（用逗號分隔）
-pytest tests/ --tag=regression,smoke --alluredir=allure-results
+pytest tests/ --tags=regression,smoke --alluredir=allure-results
 ```
 
 #### 6.4 執行特定測試檔案
@@ -374,7 +369,7 @@ TC001,Test case,0,regression,200,,auth
 ### Q2: 如何只執行特定標籤的測試？
 
 ```bash
-pytest tests/ --tag=regression --alluredir=allure-results
+pytest tests/ --tags=regression --alluredir=allure-results
 ```
 
 ### Q3: 測試失敗時如何除錯？
@@ -399,11 +394,32 @@ pytest tests/ -v -s --alluredir=allure-results
 - `no-auth`: 無認證
 - `auth_invalid`: 無效認證（需要在 `utils/auth.py` 中實作）
 
+## 🔄 CI/CD 整合
+
+本專案包含 GitHub Actions 設定，支援自動化測試：
+
+### 設定 GitHub Secrets
+
+在 GitHub Repository Settings → Secrets and variables → Actions 中設定：
+
+- `SERVICE_A_BASE_URL` - Service A 的 API URL
+- `SERVICE_A_ACCOUNT` - Service A 的帳號
+- `SERVICE_A_PASSWORD` - Service A 的密碼
+
+### 查看測試結果
+
+1. 前往 GitHub Repository → **Actions** 標籤
+2. 選擇對應的 workflow 執行
+3. 下載 **Artifacts** 中的測試報告
+
+詳細說明請參考 [.github/workflows/README.md](.github/workflows/README.md)
+
 ## 📚 下一步
 
 - 閱讀 [ARCHITECTURE.md](ARCHITECTURE.md) 了解架構設計
 - 閱讀 [README.md](README.md) 了解專案特色
 - 閱讀 [CONTRIBUTING.md](CONTRIBUTING.md) 了解如何貢獻
+- 閱讀 [.github/workflows/README.md](.github/workflows/README.md) 了解 CI/CD 設定
 
 ## 💡 提示
 

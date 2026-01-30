@@ -26,7 +26,7 @@ class OAuth2(BaseAPI):
         Args:
             account: 使用者帳號
             credential: 使用者密碼
-            service: 服務選擇 ('service_a' 或 'service_b')
+            service: 保留參數，目前僅使用 Service A
         
         Returns:
             str: 認證 token/cookie
@@ -38,11 +38,7 @@ class OAuth2(BaseAPI):
             'password': credential
         }
         
-        base_url = (
-            self.service_a_base_url if service == 'service_a'
-            else self.service_b_base_url
-        )
-        url = f"{base_url}{self.version}{login_path}"
+        url = f"{self.service_a_base_url}{self.version}{login_path}"
         
         try:
             response = requests.post(

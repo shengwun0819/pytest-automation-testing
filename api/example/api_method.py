@@ -34,7 +34,7 @@ class APIMethod(BaseAPI):
             cookie_code: 認證類型 ('auth', 'admin' 等)
             params_query: 查詢參數字串
             body: 請求 body (dict)
-            service: 服務選擇 ('service_a' 或 'service_b')
+            service: 保留參數，目前僅使用 Service A
         
         Returns:
             requests.Response: HTTP 回應物件

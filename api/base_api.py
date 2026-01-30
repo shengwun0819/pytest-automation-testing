@@ -11,10 +11,9 @@ class BaseAPI:
     """
     API 請求基礎類別
 
-    提供統一的 HTTP 請求方法，支援多服務切換
+    提供統一的 HTTP 請求方法
     """
     service_a_base_url = config.SERVICE_A_BASE_URL
-    service_b_base_url = config.SERVICE_B_BASE_URL
     version = config.VERSION
 
     def request(
@@ -32,7 +31,7 @@ class BaseAPI:
             method: HTTP 方法 (GET, POST, PUT, PATCH, DELETE)
             path: API 路徑
             params_query: 查詢參數字串 (例如: ?page=1&limit=10)
-            service: 服務選擇 ('service_a' 或 'service_b')
+            service: 保留參數，目前僅使用 Service A
             **kwargs: 其他 requests 參數 (headers, json, data 等)
 
         Returns:
@@ -41,11 +40,7 @@ class BaseAPI:
         Raises:
             requests.exceptions.RequestException: 請求失敗時
         """
-        base_url = ''
-        if service == 'service_a':
-            base_url = f"{self.service_a_base_url}{self.version}{path}{params_query}"
-        else:
-            base_url = f"{self.service_b_base_url}{self.version}{path}{params_query}"
+        base_url = f"{self.service_a_base_url}{self.version}{path}{params_query}"
 
         try:
             # 預設 timeout 為 20 秒，等待資料傳輸完成

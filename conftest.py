@@ -8,12 +8,12 @@ import subprocess
 import time
 from datetime import datetime
 
-import config
+import config as app_config
 import pytest
 
-# 全域變數
-env = config.ENV
-version = config.VERSION
+# 全域變數（使用 app_config 避免與 pytest hook 參數 config 混淆）
+env = app_config.ENV
+version = app_config.VERSION
 
 
 def pytest_addoption(parser):
@@ -23,11 +23,20 @@ def pytest_addoption(parser):
     parser.addoption(
         '--tags',
         action='store',
+        default=None,
         help='指定要執行的測試標籤（以逗號分隔）'
+    )
+    parser.addoption(
+        '--tag',
+        action='store',
+        default=None,
+        dest='tag',
+        help='同 --tags，單一標籤（例如 --tag=regression）'
     )
     parser.addoption(
         '--export',
         action='store',
+        default=None,
         help='是否匯出報告（true/false）'
     )
     parser.addoption(
@@ -40,11 +49,10 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     """
-    pytest 配置初始化
+    pytest 配置初始化（參數名須為 config 以符合 pytest hookspec）
     """
     global target_tags
-    target_tags = config.getoption('--tags')
-    
+    target_tags = config.getoption('--tags', default=None) or config.getoption('--tag', default=None)
     if target_tags:
         target_tags = target_tags.lower().split(',')
 
@@ -108,16 +116,16 @@ def pytest_sessionfinish(session):
 def pytest_terminal_summary(terminalreporter, config, exitstatus):
     """
     測試終端摘要
-    生成 Allure 報告
+    生成 Allure 報告（參數名須為 config 以符合 pytest hookspec）
     """
     time.sleep(2)
     
-    is_export = config.getoption('--export')
+    is_export = config.getoption('--export', default=None)
     allure_results_dir = config.getoption("--allure-results-dir")
     
     time_now = datetime.strftime(datetime.now(), '%Y-%m-%d_%H:%M:%S')
     result = 'success' if exitstatus == 0 else 'failed'
-    commit_sha = config.COMMIT_SHA or 'local'
+    commit_sha = getattr(app_config, 'COMMIT_SHA', None) or 'local'
     report_dir = f"test_report/report_{commit_sha}_{result}_{time_now}"
     report_name = f'report_{commit_sha}_{result}_{time_now}.html'
     

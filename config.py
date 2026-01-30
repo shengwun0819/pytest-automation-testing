@@ -47,13 +47,6 @@ SERVICE_A_ACCOUNT = get_env('SERVICE_A_ACCOUNT')
 SERVICE_A_PASSWORD = get_env('SERVICE_A_PASSWORD')
 
 # ============================================
-# Service B 配置（對應原始專案中的 BEN）
-# ============================================
-SERVICE_B_BASE_URL = get_env('SERVICE_B_BASE_URL')
-SERVICE_B_ACCOUNT = get_env('SERVICE_B_ACCOUNT')
-SERVICE_B_PASSWORD = get_env('SERVICE_B_PASSWORD')
-
-# ============================================
 # 測試資料設定
 # ============================================
 TEST_DATA_FOLDER = get_env('TEST_DATA_FOLDER', default='./test_data')

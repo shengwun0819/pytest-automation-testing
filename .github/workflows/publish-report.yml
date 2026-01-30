@@ -1,0 +1,38 @@
+# 發布 Allure 報告到 GitHub Pages
+name: Publish Test Report
+
+on:
+  # 在「API Tests」完成後觸發
+  workflow_run:
+    workflows: ["API Tests"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  publish-report:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure'
+
+    steps:
+      # 取得程式碼
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 下載 API Tests 產生的 Allure 報告（test.yml 上傳名稱為 allure-report-<python-version>，取其一即可）
+      - name: Download Allure Report
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-3.11
+          path: allure-report
+
+      # 發布到 GitHub Pages（僅 main 分支）
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          destination_dir: ./test-report

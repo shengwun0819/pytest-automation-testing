@@ -34,7 +34,7 @@ class FileProcess:
         file_path = f"./{testdata_folder}/{env}/{path}/{file_name}"
         sheet = pd.read_csv(
             filepath_or_buffer=f"{file_path}.csv",
-            header=1,  # 從第二行開始讀取（第一行為標題）
+            header=0,  # 第一行為標題（本專案 CSV 單一標題列；若為雙列標題則改為 header=1）
             dtype=str
         ).dropna(how='all').reset_index(drop=True)  # 移除完全為空的列
 
